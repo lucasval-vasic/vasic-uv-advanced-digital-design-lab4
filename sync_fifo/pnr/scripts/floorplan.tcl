@@ -37,8 +37,8 @@ createPGPin VDD -dir input -net VDD -geom {Metal1 61 66 62 67}
 # Global P/G net connections
 # ----------------------------------------------------------
 clearGlobalNets
-globalNetConnect VDD -type pgpin -pin vddi -all
-globalNetConnect VSS -type pgpin -pin gndi -all
+globalNetConnect VDD -type pgpin -pin VDD -all
+globalNetConnect VSS -type pgpin -pin VSS -all
 
 # ----------------------------------------------------------
 # Power grid
@@ -51,7 +51,7 @@ addStripe  -direction vertical   -nets {VDD VSS} -width 1 -spacing 1 -layer 5 -s
 addStripe  -direction horizontal -nets {VDD VSS} -width 1 -spacing 1 -layer 6 -start_offset 25 -set_to_set_distance 25
 
 # power routing
-sroute -connect { blockPin corePin padPin padRing floatingStripe } -layerChangeRange { M1 METTP } -blockPinTarget { nearestTarget } -padPinPortConnect { allPort oneGeom } -padPinTarget { nearestTarget } -corePinTarget { firstAfterRowEnd } -floatingStripeTarget { blockring padring stripe ringpin blockpin followpin } -allowJogging 1 -crossoverViaLayerRange { M1 M5 } -nets { VDD VSS } -allowLayerChange 1 -blockPin useLef -targetViaLayerRange { M1 METTP }
+sroute -connect { blockPin corePin padPin padRing floatingStripe } -layerChangeRange { Metal1 Metal11 } -blockPinTarget { nearestTarget } -padPinPortConnect { allPort oneGeom } -padPinTarget { nearestTarget } -corePinTarget { firstAfterRowEnd } -floatingStripeTarget { blockring padring stripe ringpin blockpin followpin } -allowJogging 1 -crossoverViaLayerRange { M1 M5 } -nets { VDD VSS } -allowLayerChange 1 -blockPin useLef -targetViaLayerRange { Metal1 Metal11 }
 
 # ----------------------------------------------------------
 # Save floorplan
