@@ -18,12 +18,8 @@ set init_mmmc_file "../scripts/setup_mmmc.tcl"
 set init_gnd_net {VSS}
 set init_pwr_net {VDD}
 
-#set lef_tech_file_map "/cadence_pdk/xfab/XKIT/x_all/cadence/XFAB_Digital_Power_RefKit-cadence/v1_3_1/src/xx018_lef_qrc.map"
 set lef_tech_file_map "/eda/ayudas/gpdkInnovus.map"
 set stream_out_map "/eda/ayudas/gpdkInnovus.map"
-
-#set power_nets { VDD }
-#set ground_nets { GND }
 
 ####################################################################################################
 ## pnr setup
@@ -33,9 +29,6 @@ setDesignMode -process 45
 setMultiCpuUsage -localCpu 2
 
 setAnalysisMode -analysisType onChipVariation -cppr both
-
-#setDontUse *XL true
-#setDontUse *X1 true
 
 #setPlaceMode -place_global_place_io_pins true
 #setPlaceMode -place_global_ignore_scan false
