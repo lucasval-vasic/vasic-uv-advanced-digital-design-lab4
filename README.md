@@ -112,3 +112,73 @@ Once the decoupling cells have been inserted filler cells will be added to the d
 As you can expect we will be producing many different output files after the complex PNR process. First of all we will produce different gates netlists for use with different flow stages such as STA, BEQ or IR drop analysis.
 
 Then we will also write the design layout in 2 different formats: a DEF text format and the binary GDS format. This will allow us to open the design from multiple tools.
+
+# Final checks
+
+Now we will run different checks on our implemented design to ensure it is ready for manufacturing. More specifically we will perform DRC checks to ensure that the design complies with silicon foundry rules, then we will run extract parasitics for a posterior Static Timing Analysis.
+
+## DRC checks
+This section will perform design rule checks (DRC) on our design following the rules set by the manufacturing process provider (Cadence for the 45nm process). 
+
+### Connectivity checks
+Here we will check whether all the nets and pins have proper connectivity. More specifically we will check whether some nets are floating, pins are shorted or open, or some nets were not routed. We can run these checks with the Innovus command:
+```console
+> verifyConnectivity
+```
+
+Since we have a completely routed and finalized design it is not expected that we see any of these violations.
+
+### Geometry checks
+
+Here multiple geometrical aspects of the design layout like shape width or spacing will be checked. The following Innovus command will perform this verification:
+
+```console
+> verify_drc
+```
+
+It is probable that you see multiple violations. At the moment of running the lab these have not beed fully explained but at least some seem to be caused by the cap and filler cells inserted in die finish stage. You can confirm this fact by loading the post-routing snapshot (source routing.enc) and rerunning the verify_drc command.
+
+### Antenna checks
+On this section we will check whether some metal tracks are long enough to be vulnerable to the antenna effect. Antenna rules in the runset file set constraints on the maximum track length per each of the metal layers. This command will check whether some of these rules are violated in our design:
+```console
+> verifyProcessAntenna
+```
+
+It is probable that you see some of these violations on your design (if you don't see any make sure you re-loaded the final PnR snapshot with source final.enc command). If this is the case you can use the GUI to observe the trace using the violation browser window. Click on an antenna violation and the GUI will automatically zoom to the affected track.
+
+We can trigger a round of routing to try to remove these antenna violations. The Innovus router will initially attempt to perform layer hopping to remove the violations and if this is not possible attempt to insert antenna diodes on the affected metal track.
+
+Use the following commands to run the router enabling options to solve the antenna issues:
+
+```console
+> setNanoRouteMode -drouteFixAntenna true
+> setNanoRouteMode -routeInsertAntennaDiode true
+> setNanoRouteMode -routeAntennaCellName ""
+> globalDetailRoute
+```
+
+These commands instruct the router to try to fix the antenna violations with both metal hopping and antenna diodes insertion if required. Now run antenna checks again and confirm whether the violations are gone.
+
+### Parasitic extraction
+
+In order to perform an accurate analysis we need to run an initial parasitic extraction on our design. Innovus has the capability to perform signoff level parasitic extraction with these commands in order to produce an SPEF parasitic annotation file per timing corner:
+
+```console
+# configure RC extraction to use postRoute engine and apply maximum effort level for timing signoff
+setExtractRCMode -engine postRoute
+
+# set signoff effort level for maximum parasitic extraction accuracy
+# this is disable for now since PDK seems to be incorrect as some layers are not properly mapped
+#setExtractRCMode -effortLevel signoff
+
+# run RC extraction
+extractRC
+
+# write out SPEF files
+foreach corner [all_rc_corners] {
+    puts "writing SPEF for corner $corner"
+    rcOut -rc_corner $corner -spef ../out/${BLOCK_NAME}_${corner}.spef
+}
+```
+
+You can execute these commands in the extract/scripts/extract.tcl script. After they execute check out the pnr/out directory to find the 2 SPEF files produced by Innovus, one per each manufacturing process corner. When running STA you will read these files to characterize the parasitic components present in your design.
