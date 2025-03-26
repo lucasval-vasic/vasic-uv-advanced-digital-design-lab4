@@ -14,4 +14,6 @@ source ../scripts/die_finish.tcl
 
 source ../scripts/write_outputs.tcl
 
+source ../scripts/extract.tcl
+
 #exit
